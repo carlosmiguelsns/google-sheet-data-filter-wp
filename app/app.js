@@ -3,6 +3,7 @@
     
     angular
     .module('app', [
-        'times.tabletop'
+        'times.tabletop',
+        'angularUtils.directives.dirPagination'
     ]);
 })();

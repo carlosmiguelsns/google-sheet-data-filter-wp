@@ -2,40 +2,84 @@
     'use strict';
 
     /**
-    * Control the SpreadSheet Loading -- https://spreadsheets.google.com/feeds/list/1AH62iGl2alh1lVK6ENpRFLNEliHL9z92YO_HV-j3RqY/1/public/basic?alt=json
+    * Control the SpreadSheet Loading
     */
     angular
         .module('app')
         .controller('SpreadSheetCtrl', SpreadSheetCtrl);
 
-    SpreadSheetCtrl.$inject = ['$scope', 'Tabletop'];
+    SpreadSheetCtrl.$inject = ['$scope', '$filter', 'Tabletop'];
 
-    function SpreadSheetCtrl($scope, Tabletop) {
+    function SpreadSheetCtrl($scope, $filter, Tabletop) {
         $scope.loading = true; // start loading...
-
-        // Sort function
-        $scope.sort = function (keyname) {
-            $scope.sortKey = keyname;
-            $scope.reverse = !$scope.reverse;
-        }
 
         Tabletop.then(function (ttdata) {
             var spreadSheet = ttdata[0];
 
             angular.forEach(spreadSheet, function (value, key) {
-                var sheet   = "Sugestões em debate", // Sheet to retrive information
+                //var sheet = shortcode_vars.sheet, // Sheet to retrive information -- Sugestões em debate
+                //    sortKey = shortcode_vars.sortColumn; // column to sort
+
+                var sheet = "sheet1", // Sheet to retrive information -- Sugestões em debate
                     sortKey = ""; // column to sort
 
-                if(sheet.toLowerCase() == key.toLowerCase()){
-                    $scope.columns  = value.original_columns; // Columns
-                    $scope.elements = value.elements; // Values
-                    $scope.sortKey  = !sortKey || sortKey.indexOf(value.original_columns) != 0 ? value.original_columns[0].toLowerCase() : sortKey.toLowerCase(); // Sort value (if sort value is fill and exists inside array 'value.original_columns' that will be use; if not the value to use inside sort var will be the first column avaible
-                    
-                    $scope.loading  = false; // stop loading
-                    
+                if (sheet.toLowerCase() == key.toLowerCase()) {
+                    //var columns = value.pretty_columns 
+                    //for(var key in columns) {
+                    //    if(key != ""){
+                    //        columns[key] = $filter('removeDiacritics')(columns[key]);
+                    //    }
+                    //}
+                    $scope.columns = value.pretty_columns; // Columns
+                    $scope.elements = convertNumbToInt(value.elements); // Values
+                    $scope.predicate = normalizeColumn(sortKey, value.pretty_columns); // Column/sort
+
+                    $scope.reverse = false;
+                    $scope.loading = false; // stop loading
+
                     return false;
                 }
             });
         });
+
+        // Sort        
+        $scope.order = function (predicate) {
+            //predicate = $filter('removeDiacritics')(predicate); // remove accents from string letters
+
+            $scope.reverse = ($scope.predicate === predicate) ? !$scope.reverse : false;
+            $scope.predicate = predicate;
+        };
+
+        // Capitalize/Set Column Order
+        function normalizeColumn(txt, columns) {
+            var finalText = "";
+            if (txt == "") {
+                for (var value in columns) {
+                    if (columns[value]) return false;
+                    //finalText = columns[value].charAt(0).toUpperCase() + columns[value].substr(1).toLowerCase();
+                    //return false;
+                }
+            } else {
+                finalText = txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            }
+
+            return finalText;
+        }
+
+        // Convert numbers to int if they are in strings
+        function convertNumbToInt(data) {
+            angular.forEach(data, function (value, key) {
+                var objPos = key;
+
+                angular.forEach(value, function (v, k) {
+                    var reg = /^\d+$/; // RegEx to check if value is number
+                    if (v.match(reg)) {
+                        data[objPos][k] = parseInt(v, 10);
+                    }
+                });
+            });
+
+            return data;
+        }
     }
 })();

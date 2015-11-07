@@ -487,27 +487,35 @@
      * Store column names as an object
      * with keys of Google-formatted "columnName"
      * and values of human-readable "Column name"
+     * ############# CHANGE BY ME #############
      */
     loadPrettyColumns: function(data) {
-      var pretty_columns = {};
+        var pretty_columns = {};
+        var column_names = this.column_names;
 
-      var column_names = this.column_names;
+        var i = 0;
+        var j = 0;
 
-      var i = 0;
-      var l = column_names.length;
-
-      for (; i < l; i++) {
-        if (typeof data.feed.entry[i].content.$t !== 'undefined') {
-          pretty_columns[column_names[i]] = data.feed.entry[i].content.$t;
-        } else {
-          pretty_columns[column_names[i]] = column_names[i];
+        for(var key in this.raw.feed.entry[0]){
+            if(/^gsx/.test(key)){
+                if(column_names[j].indexOf('_') !== 0){
+                    if (typeof data.feed.entry[i].content.$t !== 'undefined') {
+                        pretty_columns[column_names[j]] = data.feed.entry[i].content.$t;
+                    } else {
+                        pretty_columns[column_names[j]] = column_names[j];
+                    }
+                    i++;
+                } else {
+                    pretty_columns[column_names[j]] = "";
+                }
+                j++
+            }
         }
-      }
 
-      this.pretty_columns = pretty_columns;
+        this.pretty_columns = pretty_columns;
 
-      this.prettifyElements();
-      this.ready();
+        this.prettifyElements();
+        this.ready();
     },
     
     /*

@@ -1,0 +1,40 @@
+<div class="alert alert-info">
+    <p>Sort Type: {{predicate}}</p>
+    <p>Sort Reverse: {{reverse}}</p>
+</div>
+
+<form>
+    <div class="form-group">
+        <div class="input-group">
+            <div class="input-group-addon">
+                <i class="glyphicon glyphicon-search"></i>
+            </div>
+            <input type="search" class="form-control" ng-model="tableResults" placeholder="Quick filter...">
+        </div>      
+    </div>
+</form>
+
+<p>[ <a href="" ng-click="predicate=''">unsorted</a> ]</p>
+
+<table class="table table-striped">
+    <thead>
+	<tr> 
+	    <th ng-repeat="column in columns">
+            <a data-href="#" ng-click="order(column)" ng-cloak>{{column | capitalize}}
+                <span class="glyphicon" ng-show="predicate === column" ng-class="{'glyphicon-chevron-up':reverse, 'glyphicon-chevron-down':!reverse}"></span> 
+            </a>
+        </th> 
+	</tr>
+    </thead>
+    <tbody>
+	    <tr dir-paginate="element in results = (elements | filter: tableResults) | orderBy:predicate:reverse | itemsPerPage: 5">
+	        <td class="col-md-4" ng-repeat="(key, value) in element" ng-cloak>{{value}}</td>
+	    </tr>
+    </tbody>
+</table>
+
+<dir-pagination-controls max-size="5" direction-links="true" boundary-links="true"></dir-pagination-controls>
+
+<div ng-if="results.length == 0">
+    <strong>No results found...</strong>
+</div>
